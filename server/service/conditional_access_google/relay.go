@@ -85,11 +85,12 @@ type Registration struct {
 
 func (r *relay) Register(ctx context.Context, serverURL, customerID string) (*Registration, error) {
 	var resp Registration
+	// Errors carry only fleetdm.com's answer: the caller names the operation.
 	if err := r.send(ctx, http.MethodPost, serverURL, registerRequest{CustomerID: customerID}, &resp); err != nil {
-		return nil, fmt.Errorf("register with fleetdm.com: %w", err)
+		return nil, err
 	}
 	if resp.FleetServerSecret == "" {
-		return nil, errors.New("register with fleetdm.com: empty fleetServerSecret in response")
+		return nil, errors.New("empty fleetServerSecret in response")
 	}
 	return &resp, nil
 }
@@ -104,10 +105,7 @@ func (r *relay) Deregister(ctx context.Context, serverURL, customerID, secret st
 	if se, ok := errors.AsType[*RelayStatusError](err); ok && se.Code == http.StatusNotFound {
 		err = &relayNotFoundError{RelayStatusError: se}
 	}
-	if err != nil {
-		return fmt.Errorf("deregister from fleetdm.com: %w", err)
-	}
-	return nil
+	return err
 }
 
 // send sends body as JSON to the registration path, with serverURL as the Origin, and

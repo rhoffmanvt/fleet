@@ -2435,6 +2435,11 @@ func (c *Client) DoGitOps(
 		} else if gwList, ok := gw.([]any); ok && allGoogleWorkspaceEntriesEmpty(gwList) {
 			integrations.(map[string]any)["google_workspace"] = []any{}
 		}
+		// Google conditional access is turned off when it is not set. The service account
+		// key is never in YAML; turning the integration off removes it on the server.
+		if gca, ok := integrations.(map[string]any)["google_conditional_access"]; !ok || gca == nil {
+			integrations.(map[string]any)["google_conditional_access"] = map[string]any{}
+		}
 		if conditionalAccessEnabled, ok := integrations.(map[string]interface{})["conditional_access_enabled"]; !ok || conditionalAccessEnabled == nil {
 			integrations.(map[string]interface{})["conditional_access_enabled"] = false
 		}
