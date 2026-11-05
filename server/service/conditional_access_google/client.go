@@ -9,13 +9,15 @@ import (
 )
 
 // Relay registers this server with the Google conditional access relay on fleetdm.com.
+// serverURL is this Fleet server's URL, which fleetdm.com uses to call the server back.
+// Callers pass the current value from the app config, since admins can change it.
 type Relay interface {
 	// Register registers this server with fleetdm.com for the customer. Registering
 	// again from the same server replaces the secret.
-	Register(ctx context.Context, customerID string) (*Registration, error)
+	Register(ctx context.Context, serverURL, customerID string) (*Registration, error)
 	// Deregister removes this server's registration from fleetdm.com. Returns an error
 	// satisfying fleet.IsNotFound when fleetdm.com has no matching registration.
-	Deregister(ctx context.Context, customerID, secret string) error
+	Deregister(ctx context.Context, serverURL, customerID, secret string) error
 }
 
 // CloudIdentity calls the Cloud Identity API for one customer, with a token minted from
